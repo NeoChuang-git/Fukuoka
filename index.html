@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ 2026 九州福岡 9 日自駕終極指南</title>
+    <!-- Tailwind CSS for modern responsive utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for trip icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet.js for interactive maps (No API key needed) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        /* Style customized Leaflet map containers */
+        #map-container {
+            height: 450px;
+            z-index: 10;
+        }
+        /* Timeline styling tweaks */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 15px;
+            width: 2px;
+            background-color: #e2e8f0;
+        }
+        /* Custom scrollbar for desktop itinerary selector */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Print layout adjustments to make PDF generation pristine */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+            .print-full {
+                width: 100% !important;
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 selection:bg-indigo-500 selection:text-white">
+<script>
+  (function() {
+    const correctHash = "f7850a552bf318eb4dfcf05fdfa5611f7c00ab2f8084a44f1c9bb7eb30f55cf5";
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    const style = document.createElement('style');
+    style.innerHTML = `
+      #auth-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #1e1e2e; color: #cdd6f4;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 999999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      .auth-box {
+        background: #313244; padding: 2.5rem; border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center; max-width: 400px; width: 90%;
+      }
+      .auth-box h2 { margin-bottom: 1.5rem; color: #f5c2e7; }
+      .auth-box input {
+        width: 100%; padding: 0.75rem; border: 2px solid #45475a; border-radius: 6px;
+        background: #1e1e2e; color: #cdd6f4; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;
+      }
+      .auth-box input:focus { outline: none; border-color: #cba6f7; }
+      .auth-box button {
+        background: #cba6f7; color: #11111b; border: none; padding: 0.75rem 1.5rem;
+        font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%;
+      }
+      .auth-box button:hover { background: #b4befe; }
+      .error-msg { color: #f38ba8; margin-top: 0.5rem; font-size: 0.9rem; display: none; }
+    `;
+    document.head.appendChild(style);
+    const overlay = document.createElement('div');
+    overlay.id = "auth-overlay";
+    overlay.innerHTML = `
+      <div class="auth-box">
+        <h2>🔑 旅程安全認證</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: #a6adc8;">此旅程行程表受密碼保護，請輸入授權密碼以繼續。</p>
+        <input type="password" id="auth-pwd" placeholder="請輸入密碼">
+        <button id="auth-btn">解鎖行程</button>
+        <div id="auth-error" class="error-msg">密碼錯誤，請重新輸入！</div>
+      </div>
+    `;
+    document.addEventListener("DOMContentLoaded", function() {
+      document.body.appendChild(overlay);
+      const input = document.getElementById("auth-pwd");
+      const button = document.getElementById("auth-btn");
+      const errorDiv = document.getElementById("auth-error");
+      const isAuthed = localStorage.getItem("fukuoka_auth_passed");
+      if (isAuthed === "true") {
+        overlay.remove();
+        return;
+      }
+      async function handleAuth() {
+        const pwd = input.value.trim();
+        if (!pwd) return;
+        const hash = await sha256(pwd);
+        if (hash === correctHash) {
+          localStorage.setItem("fukuoka_auth_passed", "true");
+          overlay.style.transition = "opacity 0.5s ease";
+          overlay.style.opacity = 0;
+          setTimeout(() => overlay.remove(), 500);
+        } else {
+          errorDiv.style.display = "block";
+          input.value = "";
+          input.focus();
+        }
+      }
+      button.onclick = handleAuth;
+      input.onkeydown = function(e) {
+        if (e.key === "Enter") handleAuth();
+      };
+    });
+  })();
+</script>
+
+
+    <!-- Navigation / Header -->
+    <header class="bg-indigo-950 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600 rounded-xl shadow-inner text-2xl flex items-center justify-center">
+                    🗺️
+                </div>
+                <div>
+                    <h1 class="font-black text-lg sm:text-xl tracking-tight flex items-center gap-2">
+                        2026 九州福岡 9 日全期自駕手冊
+                    </h1>
+                    <p class="text-xs text-indigo-200">縱橫山海、進擊聖地、極致血拼的移動美學助手</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="bg-amber-500 text-indigo-950 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-calendar mr-1"></i> 07/17 ～ 07/25
+                </span>
+                <span class="bg-sky-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-car mr-1"></i> Toyota NOAH (4WD)
+                </span>
+                <button onclick="window.print()" class="bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded-full text-xs font-semibold transition-all shadow-sm">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> 匯出 PDF / 列印
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 py-6">
+        
+        <!-- Quick Overview Row -->
+        <section class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Left Side: Road Rules Quick Card -->
+            <div class="lg:col-span-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
+                <div class="space-y-2">
+                    <h2 class="text-indigo-950 font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-road text-indigo-600"></i> 核心自駕與路權概要
+                    </h2>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-sm text-slate-600">
+                        <li><strong class="text-slate-800">🚘 租車方案</strong>：Toyota Rent-a-car W2 等級 (7-8人座)</li>
+                        <li><strong class="text-slate-800">⏱️ 路權時段</strong>：07/17 12:00 ～ 07/24 20:00 (整整8天)</li>
+                        <li><strong class="text-slate-800">🛣️ 高速通行</strong>：請臨櫃確認開通 <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-xs font-bold">8日 KEP 方案</span></li>
+                        <li><strong class="text-slate-800">⚠️ 取車重要手續</strong>：務必確認 KEP 與 ETC 卡片正確合一</li>
+                    </ul>
+                </div>
+                <!-- Mini Quick Sketch Info Box -->
+                <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl w-full md:w-auto min-w-[200px] text-center md:text-left">
+                    <span class="text-xs text-indigo-600 font-semibold block uppercase tracking-wider">今日自駕速寫</span>
+                    <p id="current-sketch" class="text-sm text-indigo-950 font-bold mt-1">
+                        載入中...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Side: Mini Tool / Car clearance check & JPY converter -->
+            <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm space-y-4">
+                <h3 class="font-bold text-sm tracking-wide uppercase text-indigo-300 flex items-center justify-between">
+                    <span>💡 自駕智慧型助理</span>
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                </h3>
+                
+                <!-- Tab Switching inside Widget -->
+                <div class="flex gap-2 bg-indigo-950/50 p-1 rounded-lg border border-indigo-800 text-xs">
+                    <button onclick="switchWidgetTab('clearance')" id="btn-clearance" class="flex-1 py-1 text-center font-semibold rounded bg-indigo-600 text-white transition-all">
+                        NOAH 車高計算
+                    </button>
+                    <button onclick="switchWidgetTab('rate')" id="btn-rate" class="flex-1 py-1 text-center font-semibold rounded text-indigo-300 hover:text-white transition-all">
+                        匯率速算
+                    </button>
+                </div>
+
+                <!-- Tab 1: Car Clearance Checker -->
+                <div id="widget-clearance" class="space-y-2">
+                    <div class="text-xs text-indigo-200">
+                        W2 NOAH (4WD) 車高為 <strong class="text-amber-300">1.895 公尺 (1,895 mm)</strong>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.01" id="parking-height" placeholder="輸入停車場限制 (如 1.8)" class="flex-1 bg-indigo-950 border border-indigo-800 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <button onclick="checkCarClearance()" class="bg-amber-500 hover:bg-amber-400 text-indigo-950 font-bold px-3 py-1 rounded-lg text-xs transition-colors">
+                            檢測
+                        </button>
+                    </div>
+                    <div id="clearance-result" class="text-xs p-2 bg-indigo-950/40 rounded border border-indigo-800 text-center text-slate-300 min-h-[32px] flex items-center justify-center">
+                        輸入限高，即時為您把關！
+                    </div>
+                </div>
+
+                <!-- Tab 2: Exchange Rate -->
+                <div id="widget-rate" class="hidden space-y-2">
+                    <div class="text-xs text-indigo-200">
+                        日圓(JPY) 快速轉換為 台幣(TWD)
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[10px] block text-indigo-300 mb-0.5">日幣 JPY</span>
+                            <input type="number" id="jpy-input" value="1000" oninput="convertCurrency()" class="w-full bg-indigo-950 border border-indigo-800 rounded-lg px-2.5 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <span class="text-[10px] block text-indigo-300 mb-0.5">匯率設定</span>
+                            <input type="number" step="0.001" id="rate-multiplier" value="0.215" oninput="convertCurrency()" class="w-full bg-indigo-950 border border-indigo-800 rounded-lg px-2.5 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                    <div class="text-sm font-bold text-amber-400 text-center pt-1" id="twd-result">
+                        約 NT$ 215 元
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Global Search Bar & Dynamic Warning Banner -->
+        <section class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-1 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="global-search" oninput="searchItinerary()" placeholder="搜尋整本手冊景點、美食（例：一蘭、溫泉）" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                <!-- Search Result Dropdown -->
+                <div id="search-results" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-100 max-h-60 overflow-y-auto z-50"></div>
+            </div>
+
+            <div class="md:col-span-2 bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-3">
+                <div class="text-amber-500 text-2xl flex-shrink-0 animate-pulse pl-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="text-xs text-amber-900 leading-normal" id="dynamic-warning">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Layout Grid -->
+        <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            
+            <!-- Left Panel (Sidebar Days / Preparation checklist) - xl:col-span-3 -->
+            <div class="xl:col-span-3 space-y-6">
+                
+                <!-- Day Selector Tabs (Horizontal Swipe for Mobile, Stacked List for Desktop) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-indigo-600"></i> 旅行日程表 (9日)
+                    </h3>
+                    
+                    <!-- Swipeable container for mobile/tablet, flex column for desktop -->
+                    <div class="flex xl:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 xl:pb-0" id="day-selector">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Dynamic Day Highlights Quick Info Card -->
+                <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl">
+                    <h4 class="font-bold text-indigo-950 text-sm mb-2 flex items-center justify-between">
+                        <span>📊 每日自駕數據</span>
+                        <i class="fa-solid fa-chart-line text-indigo-500"></i>
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-white p-2.5 rounded-xl border border-indigo-100">
+                            <span class="text-[10px] block text-slate-500 uppercase">預估總里程</span>
+                            <strong class="text-indigo-950 text-base" id="stat-mileage">-- km</strong>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-indigo-100">
+                            <span class="text-[10px] block text-slate-500 uppercase">預估駕駛時間</span>
+                            <strong class="text-indigo-950 text-sm block truncate pt-0.5" id="stat-time">--</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Self-Driving Preparation Checklist (LocalStorage Saved) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i> 自駕行前檢查清單
+                        </h3>
+                        <button onclick="resetChecklist()" class="text-[10px] text-slate-400 hover:text-indigo-600 transition-colors">
+                            重置
+                        </button>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-600" id="checklist-container">
+                        <!-- Loaded dynamically via JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Center Panel (Timeline / Detailed Itinerary Card) - xl:col-span-5 -->
+            <div class="xl:col-span-5 space-y-6">
+                <!-- Main Daily Content Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <!-- Day Header Banner -->
+                    <div class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-indigo-700 text-indigo-100 font-extrabold text-xs tracking-wider uppercase px-2.5 py-1 rounded-md" id="day-badge">
+                                DAY X
+                            </span>
+                            <span class="text-indigo-200 text-xs font-semibold" id="day-date">
+                                2026/07/XX (週X)
+                            </span>
+                        </div>
+                        <h2 class="text-xl font-bold" id="day-title">
+                            日程載入中
+                        </h2>
+                    </div>
+
+                    <!-- Daily Sketch Note -->
+                    <div class="bg-slate-50 border-b border-slate-100 px-5 py-3 text-xs text-slate-600 flex items-center gap-2">
+                        <i class="fa-solid fa-route text-indigo-500"></i>
+                        <span class="font-semibold text-slate-800">當日速寫：</span>
+                        <span id="day-sketch-route">--</span>
+                    </div>
+
+                    <!-- Interactive Stop Timeline List -->
+                    <div class="p-5 relative timeline-line" id="timeline-list">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel (Interactive Leaflet Map & Stop details) - xl:col-span-4 -->
+            <div class="xl:col-span-4 space-y-6">
+                <!-- Map Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-[90px]">
+                    <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-sky-400"></i>
+                            <h3 class="font-bold text-sm">自駕導航動線地圖 (Leaflet)</h3>
+                        </div>
+                        <span class="bg-sky-500/20 text-sky-300 text-[10px] font-bold px-2 py-0.5 rounded border border-sky-500/30">
+                            免 API 定位
+                        </span>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div id="map-container" class="bg-slate-100"></div>
+
+                    <!-- Map Navigation Help Panel -->
+                    <div class="p-4 bg-slate-50 text-xs text-slate-500 space-y-2 border-t border-slate-100">
+                        <p class="flex items-start gap-1.5 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-indigo-500 mt-0.5"></i>
+                            <span>點擊左側行程表中的地標，此地圖將自動平移並高亮該站點。點擊景點圖標可取得即時導航與備註資訊。</span>
+                        </p>
+                        <div class="flex gap-4 items-center pt-2">
+                            <div class="flex items-center gap-1">
+                                <span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span>
+                                <span>景點</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                                <span>餐飲</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                                <span>住宿/起終點</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- Travel Planner Warning & Recommendations Section -->
+        <section class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-indigo-950 font-black text-lg mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> 規劃師提示 & 自駕防禦守則 (Travel Planner Guidance)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-money-bill-wave text-emerald-600"></i> 預算與现场支付備忘
+                    </h3>
+                    <p class="text-slate-600 leading-relaxed text-xs">
+                        第一晚入住的 <strong class="text-slate-800">「奧日田溫泉（Okuhita Onsen Umehibiki）」</strong> 房型為<strong>現場付款、不含早餐與晚餐</strong>。當晚抵達山谷後無超商，請務必在日田市區超商（如想夫恋對面）預先買好隔天早餐與宵夜，並備妥日元現金或信用卡現場支付。
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 高度安全與立體停車
+                    </h3>
+                    <p class="text-slate-600 leading-relaxed text-xs">
+                        預約的 W2 等級 <strong class="text-slate-800">NOAH 4WD</strong> 車身較高（高達 1,895 mm 以上），進入市區（如天神大名、中洲、由布院）的民間傳統機械或老舊立體停車場前，請務必再三核對場外限高標示。
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice text-indigo-600"></i> PDF 匯出與列印秘訣
+                    </h3>
+                    <p class="text-slate-600 leading-relaxed text-xs">
+                        點擊右上角「匯出 PDF」，可以使用預設樣式進行實體 A4 印刷或儲存為 PDF 在行動裝置上隨開隨用。本手冊內含之「點我導航」連結均為經緯度，在 PDF 介面或網頁上皆能完美喚醒 Google Maps APP。
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 text-slate-400 text-xs py-8 mt-12 border-t border-indigo-900">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div>
+                <p class="font-bold text-slate-200">2026 九州福岡 9 日全期自駕極致路書</p>
+                <p class="mt-1">由 2026 專業自駕行規劃小組精心編排並轉換互動網頁。預祝旅途平安！</p>
+            </div>
+            <div class="flex gap-4">
+                <a href="https://www.japan-guide.com" target="_blank" class="hover:text-white transition-colors">日本自駕指南</a>
+                <span>|</span>
+                <a href="https://www.expresswaypass.co.jp" target="_blank" class="hover:text-white transition-colors">KEP高速通票</a>
+                <span>|</span>
+                <a href="https://rent.toyota.co.jp" target="_blank" class="hover:text-white transition-colors">Toyota 租車</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- TRIP DATABASE (JSON STRUCTURE) ---
+        const itinerary = [
+            {
+                day: 1,
+                date: "2026/07/17 (五)",
+                title: "啟程！桃園 ➔ 福岡機場 ➔ 日田溫泉區",
+                mileage: "76.5 km",
+                duration: "1 小時 50 分鐘",
+                warning: "🚨 博多及福岡機場周邊中午後正值繁忙，車流量極大，請慢速適應右駕。入夜前往奥日田溫泉（大山町山區）時，道路蜿蜒且完全無路燈，請減速開啟遠光燈並防霧。",
+                sketch: "福岡空港 ➔ 牧のうどん ➔ 豆田町小京都 ➔ 奥日田温泉 ♨️",
+                stops: [
+                    { time: "10:05", name: "福岡空港 国際線航廈", address: "〒812-0851 福岡県福岡市博多区大字青木739", lat: 33.5852, lng: 130.4507, note: "航廈付費停車場（24小時上限2,400日圓）。出關後至 1F 大廳辦理入境手續。", link: "https://www.google.com/maps/search/?api=1&query=33.5852,130.4507", type: "transport" },
+                    { time: "12:06", name: "佐川急便 國際線櫃檯", address: "福岡空港國際線航廈 1F 抵達大廳內", lat: 33.5849, lng: 130.4498, note: "關鍵手續！將不需要帶去溫泉區的大型行李，直接託運至福岡第 4 晚（9HOTEL）入住的飯店，實現雙手解放自駕。", link: "https://www.google.com/maps/search/?api=1&query=33.5849,130.4498", type: "service" },
+                    { time: "12:00", name: "トヨタレンタカー 福岡空港国際線店", address: "〒812-0892 福岡県福岡市博多区東那珂2-22-3", lat: 33.5786, lng: 130.4429, note: "租車專用免運費停車場。檢查台灣駕照、日文譯本及護照，確認 8 日 KEP 已順利開通，並租借好 ETC 卡片。", link: "https://www.google.com/maps/search/?api=1&query=33.5786,130.4429", type: "car" },
+                    { time: "14:29", name: "釜揚げ牧のうどん 空港店", address: "〒812-0853 福岡県福岡市博多区東平尾2-4-30", lat: 33.5855, lng: 130.4611, note: "開車約 10 分鐘。店前有大型免費專用停車場。極粗手打麵，麵條會不斷吸湯，隨餐附上一壺高湯可隨時添加。", link: "https://www.google.com/maps/search/?api=1&query=33.5855,130.4611", type: "food" },
+                    { time: "16:26", name: "豆田町商店街", address: "〒877-0005 大分県日田市豆田町", lat: 33.3276, lng: 130.9412, note: "開車約 1 小時 15 分。停在「上町通り」或「豆田市營」停車場（部分免費）。多數老店於 17:00 休息，建議先逛街。", link: "https://www.google.com/maps/search/?api=1&query=33.3276,130.9412", type: "spot" },
+                    { time: "17:34", name: "想夫恋 総本店", address: "〒877-0037 大分県日田市若宮町416-1", lat: 33.3155, lng: 130.9351, note: "開車約 5 分鐘。店後方設有大型免費專用停車場。日田焦香鐵板炒麵元祖。請在此時順便於市區超商買齊隔天早餐與宵夜。", link: "https://www.google.com/maps/search/?api=1&query=33.3155,130.9351", type: "food" },
+                    { time: "19:21", name: "奥日田温泉 うめひびき", address: "〒877-0201 大分県日田市大山町西大山4587", lat: 33.2458, lng: 130.9564, note: "開車約 25 分鐘山路。住客專屬免費停車場。此房型現場未付款、不含早晚餐，務必在市區補給後前往。", link: "https://www.google.com/maps/search/?api=1&query=33.2458,130.9564", type: "hotel" }
+                ]
+            },
+            {
+                day: 2,
+                date: "2026/07/18 (六)",
+                title: "進擊的巨人聖地巡禮 ➔ 別府溫泉之鄉",
+                mileage: "88.5 km",
+                duration: "2 小時 15 分鐘",
+                warning: "🚨 週六別府溫泉市區易塞車。地獄蒸工房鉄輪週六下午排隊可能需 1 小時以上，且不提供事先預約，請保持時間與行程彈性。",
+                sketch: "大山水壩 ➔ 巨人 HITA 博物館 ➔ 日田驛兵長 ➔ 鐵輪地獄蒸 DIY ➔ AMANEK別府 ♨️",
+                stops: [
+                    { time: "08:00", name: "奧日田溫泉 出發", address: "〒877-0201 大分県日田市大山町", lat: 33.2458, lng: 130.9564, note: "清晨山林空氣極佳，山路蜿蜒，請小心慢行。", link: "https://www.google.com/maps/search/?api=1&query=33.2458,130.9564", type: "car" },
+                    { time: "09:10", name: "大山ダム (大山水壩)", address: "〒877-0201 大分県日田市大山町西大山", lat: 33.2569, lng: 130.9701, note: "開車約 15 分鐘。水壩下流廣場設有免費專用停車場。仰望高聳大壩，尋找艾連、三笠、阿爾敏驚恐的「初始之日」銅像。", link: "https://www.google.com/maps/search/?api=1&query=33.2569,130.9701", type: "spot" },
+                    { time: "10:16", name: "進撃の巨人 in HITA ミュージアム", address: "〒877-0201 大分県日田市大山町西大山4106", lat: 33.2682, lng: 130.9654, note: "開車約 5 分鐘。停在「道の駅 水辺の郷おおやま」大型免費停車場。假日 09:00～17:00 開放，免費入館參觀原稿珍藏。", link: "https://www.google.com/maps/search/?api=1&query=33.2682,130.9654", type: "spot" },
+                    { time: "11:32", name: "日田駅前 リヴァイ兵長銅像", address: "〒877-0013 大分県日田市元町11-1", lat: 33.3211, lng: 130.9409, note: "開車約 20 分鐘。車站旁市營停車場（前 30 分鐘免費）。兵長銅像就在車站正前方廣場。", link: "https://www.google.com/maps/search/?api=1&query=33.3211,130.9409", type: "spot" },
+                    { time: "12:36", name: "Attack on Hita Cafe", address: "〒877-0005 大分県日田市豆田町14-3", lat: 33.3283, lng: 130.9415, note: "開車約 3 分鐘。沿用豆田町周邊公共付費停車格。有豐富的巨人聯名限定餐飲、周邊與獨家限定品。", link: "https://www.google.com/maps/search/?api=1&query=33.3283,130.9415", type: "food" },
+                    { time: "13:39", name: "日田玖珠地域産業振興センター", address: "〒877-0016 大分県日田市三本松2-3-1", lat: 33.3197, lng: 130.9427, note: "開車約 3 分鐘。廠區附設專屬免費停車場。販售當地由杉木製成的傳統特色木屐。", link: "https://www.google.com/maps/search/?api=1&query=33.3197,130.9427", type: "spot" },
+                    { time: "14:46", name: "たかむら うどん (Takamura)", address: "〒877-0000 大分県日田市丸山2-2-1", lat: 33.3325, lng: 130.9358, note: "開車約 5 分鐘。店前有免費車位（約 8 台）。震撼力十足的大份量巨人烏龍麵，僅供應午餐，週六有營業。", link: "https://www.google.com/maps/search/?api=1&query=33.3325,130.9358", type: "food" },
+                    { time: "16:46", name: "地獄蒸し工房 鉄輪", address: "〒874-0044 大分県別府市風呂本5組", lat: 33.3149, lng: 131.4795, note: "開車約 1 小時（走日田IC至別府IC）。附設專用免費停車場。利用高溫溫泉蒸汽 DIY 蒸煮新鮮食材，樂趣無窮。", link: "https://www.google.com/maps/search/?api=1&query=33.3149,131.4795", type: "spot" },
+                    { time: "18:03", name: "アマネク別府ゆらり (AMANEK)", address: "〒874-0934 大分県別府市駅前町6-35", lat: 33.2798, lng: 131.5019, note: "開車約 15 分鐘。停在飯店停車場（住客每晚 1,000 日圓）。連住兩晚，已付款，含隔日早餐。有高檔頂樓無邊際溫泉。", link: "https://www.google.com/maps/search/?api=1&query=33.2798,131.5019", type: "hotel" }
+                ]
+            },
+            {
+                day: 3,
+                date: "2026/07/19 (日)",
+                title: "瘋狂野生動物園 ➔ 別府溫泉四大地獄巡禮",
+                mileage: "43.3 km",
+                duration: "1 小時 30 分鐘",
+                warning: "🚨 本日適逢週日！野生動物園一開園，聯外道路極易發生大回堵。務必於 07:30 前從別府市區出發。叢林巴士車票極易售罄，請務必在官網先預約好！",
+                sketch: "野生動物園 🦁 ➔ 海地獄 🩵 ➔ 灶地獄 ♨️ ➔ 血池地獄 ❤️ ➔ 返回別府",
+                stops: [
+                    { time: "08:00", name: "別府 AMANEK 出發", address: "〒874-0934 大分県別府市駅前町", lat: 33.2798, lng: 131.5019, note: "沿國道 500 號前進，早晨山路霧氣較大，請注意車距安全。", link: "https://www.google.com/maps/search/?api=1&query=33.2798,131.5019", type: "car" },
+                    { time: "09:35", name: "九州自然動物園 アフリカンサファリ", address: "〒872-0722 大分県宇佐市安心院町南畑2-1755", lat: 33.3619, lng: 131.4111, note: "開車約 35 分鐘。園區設有大型免費停車場。近距離餵食猛獸，請務必提早於官網購買叢林巴士門票。", link: "https://www.google.com/maps/search/?api=1&query=33.3619,131.4111", type: "spot" },
+                    { time: "11:30", name: "Salvia 家庭餐廳", address: "動物園入口紀念品廣場旁", lat: 33.3619, lng: 131.4111, note: "推薦餐點：大分名物 とり天御膳（炸雞天婦羅定食）。外酥內軟，沾上橙醋醬極為酸甜解膩！", link: "https://www.google.com/maps/search/?api=1&query=33.3619,131.4111", type: "food" },
+                    { time: "12:57", name: "海地獄 (Umi Jigoku)", address: "〒874-0045 大分県別府市大字鉄輪559-1", lat: 33.3162, lng: 131.4695, note: "開車約 25 分鐘。大型免費停車場。夢幻 Tiffany 藍與熱帶大鬼蓮。建議在此買地獄共通觀覽券最划算。", link: "https://www.google.com/maps/search/?api=1&query=33.3162,131.4695", type: "spot" },
+                    { time: "13:29", name: "かまど地獄 (灶地獄)", address: "〒874-0041 大分県別府市御幸4組", lat: 33.3155, lng: 131.4729, note: "開車約 2 分鐘。附設專屬免費停車場。有多重溫泉奇景。必吃黑糖地獄蒸布丁、喝溫泉水！", link: "https://www.google.com/maps/search/?api=1&query=33.3155,131.4729", type: "spot" },
+                    { time: "13:50", name: "血の池地獄 (血池地獄)", address: "〒874-0016 大分県別府市野田778", lat: 33.3268, lng: 131.4881, note: "開車約 8 分鐘。大型免費停車場。驚悚淒美的紅色泥流溫泉池。必買伴手禮是利用園內泥漿做成的「血之池軟膏」。", link: "https://www.google.com/maps/search/?api=1&query=33.3268,131.4881", type: "spot" },
+                    { time: "14:21", name: "龍巻地獄 (Tatsumaki)", address: "〒874-0016 大分県野田782", lat: 33.3274, lng: 131.4883, note: "開車約 1 分鐘（就在血池隔壁）。共用免費停車場。天然間歇泉，每 30-40 分鐘噴發一次，購票時請先確認好噴發時間。", link: "https://www.google.com/maps/search/?api=1&query=33.3274,131.4883", type: "spot" },
+                    { time: "14:49", name: "返回別府 AMANEK 飯店", address: "〒874-0934 大分県別府市駅前町6-35", lat: 33.2798, lng: 131.5019, note: "開車約 20 分鐘。提前返回飯店以避開傍晚市區與景點周圍的嚴重塞車潮，放鬆享受頂樓溫泉設施。", link: "https://www.google.com/maps/search/?api=1&query=33.2798,131.5019", type: "hotel" }
+                ]
+            },
+            {
+                day: 4,
+                date: "2026/07/20 (一)",
+                title: "由布院童話小鎮 ➔ 南藏院 ➔ 入住福岡博多",
+                mileage: "163.5 km",
+                duration: "2 小時 50 分鐘",
+                warning: "🚨 順向流暢優化動線，絕不回頭走重複路！南藏院的服裝規範極嚴，短褲與細肩帶禁止入內（現場可租圍裙），刺青需遮掩，16:30 準時休園。",
+                sketch: "金鱗湖 ➔ 湯之坪童話村 ➔ 由布釜飯 ➔ 南藏院涅槃佛 🟢 ➔ 福岡 ９HOTEL",
+                stops: [
+                    { time: "08:00", name: "別府 AMANEK 退房出發", address: "〒874-0934 大分県別府市駅前町", lat: 33.2798, lng: 131.5019, note: "走縣道 11 號「山波公路（Yamanami Highway）」，沿途欣賞美麗的火山大草原與壯麗山岳風景。", link: "https://www.google.com/maps/search/?api=1&query=33.2798,131.5019", type: "car" },
+                    { time: "09:37", name: "由布院童話村 ＆ 金鱗湖", address: "〒879-5102 大分県由布市湯布院町川上1503-3", lat: 33.2678, lng: 131.3615, note: "開車約 40 分鐘。景區周邊均為計次收費停車場。停好車後一次步行完成「花麹菊家」（10:38）、「爵士樂和洋館」（10:49）與「金鱗湖水中鳥居」（11:54）。", link: "https://www.google.com/maps/search/?api=1&query=33.2678,131.3615", type: "spot" },
+                    { time: "12:58", name: "由布まぶし 心 金鱗湖本店", address: "〒879-5102 大分県由布市湯布院町川上1492-1", lat: 33.2662, lng: 131.3644, note: "豐後牛/地雞三吃釜飯元祖。超人氣名店，建議一到由布院（09:40左右）先走到店門口寫上名字登記候位，可大幅省去排隊時間！", link: "https://www.google.com/maps/search/?api=1&query=33.2662,131.3644", type: "food" },
+                    { time: "15:20", name: "南蔵院 (Nanzoin)", address: "〒811-2405 福岡県糟屋郡篠栗町篠栗1035", lat: 33.6189, lng: 130.5731, note: "開車約 1 小時 40 分。院前設有數個免費公有停車場。擁世界最大青銅涅槃巨佛。請注意服裝儀容要求。", link: "https://www.google.com/maps/search/?api=1&query=33.6189,130.5731", type: "spot" },
+                    { time: "16:50", name: "中洲屋台街", address: "〒810-0801 福岡県福岡市博多区中洲1丁目8", lat: 33.5904, lng: 130.4071, note: "開車約 25 分鐘。博多夜間河畔特色路邊攤，多數按人頭低消限制，人潮眾多。", link: "https://www.google.com/maps/search/?api=1&query=33.5904,130.4071", type: "spot" },
+                    { time: "17:56", name: "９HOTEL HAKATA (九號飯店)", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "開車約 6 分鐘。利用外圍 24h 上限的投幣式停車場（約 1,200~1,500 日圓/晚）。Day 1 從機場直寄的行李已經送達大廳，辦理入住手續。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "hotel" }
+                ]
+            },
+            {
+                day: 5,
+                date: "2026/07/21 (週二)",
+                title: "北九州門司港大正浪漫 ➔ 皿倉山百萬夜景",
+                mileage: "189.2 km",
+                duration: "3 小時 15 分鐘",
+                warning: "🚨 皿倉山纜車週二班次常提早結束！出發前請再次透過官網核對。若遇到多霧或雨天，強烈建議與 Day 6 的絲島行程互調，以免看不到夜景。",
+                sketch: "門司港 🧱 ➔ 和布刈神社 🌊 ➔ 燒咖哩 🍛 ➔ 北九州 OUTLET 🛍️ ➔ 皿倉山夜景 🌃",
+                stops: [
+                    { time: "08:00", name: "福岡 ９HOTEL 出發", address: "〒812-0022 福岡県福岡市博多区", lat: 33.5997, lng: 130.4045, note: "由都市高速築港IC駛入九州自動車道，路況寬敞好開，一路向北前進。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "car" },
+                    { time: "10:11", name: "門司港レトロ展望室 ＆ 懷舊街區", address: "〒801-0852 福岡県北九州市門司区東港町1-32", lat: 33.9463, lng: 130.9654, note: "開車約 1 小時 20 分。停「門司港レトロ駐車場」（每小時200日圓）。步行逛「關門海峽Live館」（11:15）與「藍翼橋行人專用開合橋秀」（13:20）。", link: "https://www.google.com/maps/search/?api=1&query=33.9463,130.9654", type: "spot" },
+                    { time: "14:26", name: "和布刈神社", address: "〒801-0855 福岡県北九州市門司区大字門司3492", lat: 33.9599, lng: 130.9626, note: "開車約 8 分鐘。設有少量免費專屬車位。位於關門大橋正下方，是絕佳的取景與拍照點。", link: "https://www.google.com/maps/search/?api=1&query=33.9599,130.9626", type: "spot" },
+                    { time: "15:00", name: "焼きカレー こがねむし", address: "〒801-0851 福岡県北九州市門司区東本町1-1-24", lat: 33.9468, lng: 130.9678, note: "開車約 8 分鐘。無專屬停車場。大正浪漫代表美食：焗烤起司燒咖哩。老闆娘極度熱情（週五公休，週二照常營業）。", link: "https://www.google.com/maps/search/?api=1&query=33.9468,130.9678", type: "food" },
+                    { time: "16:29", name: "THE OUTLETS KITAKYUSHU", address: "〒805-0071 福岡県北九州市八幡東区東田4-1-1", lat: 33.8708, lng: 130.8122, note: "開車約 30 分鐘。設有超大型免費聯合停車場。商場與 AEON MALL 相連，品牌非常豐富。", link: "https://www.google.com/maps/search/?api=1&query=33.8708,130.8122", type: "spot" },
+                    { time: "17:42", name: "皿倉山ケーブルカー 山麓駅", address: "〒805-0057 福岡県北九州市八幡東区大字尾倉1481-1", lat: 33.8441, lng: 130.7981, note: "開車約 15 分鐘。停在市營皿倉山立體停車場（每2小時300日圓）。轉乘斜面纜車登頂，俯瞰新日本三大夜景。", link: "https://www.google.com/maps/search/?api=1&query=33.8441,130.7981", type: "spot" },
+                    { time: "19:43", name: "返回 ９HOTEL HAKATA", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "開車約 1 小時 10 分返回福岡市區飯店，結束充實的北九州大正懷舊之一天。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "hotel" }
+                ]
+            },
+            {
+                day: 6,
+                date: "2026/07/22 (三)",
+                title: "網美熱門打卡天堂 ➔ 浪漫糸島半島自駕一日遊",
+                mileage: "119.2 km",
+                duration: "2 小時 40 分鐘",
+                warning: "🚨 糸島沿海公路（Sunset Road）為單線道。暑期午後遊客常因路邊拍照导致局部塞車，NOAH 車身較大，會車與迴轉請多留心。",
+                sketch: "龍貓森林 ➔ 烤牡蠣白浜家 ➔ 手工花鹽布丁 🍮 ➔ 夫婦岩鳥居 ⛩️ ➔ 華味鳥",
+                stops: [
+                    { time: "08:00", name: "福岡 ９HOTEL 出發", address: "〒812-0022 福岡県福岡市博多区", lat: 33.5997, lng: 130.4045, note: "經都市高速、今宿道路一路向西切入糸島半島，沿路風景逐漸變為蔚藍海景。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "car" },
+                    { time: "09:44", name: "芥屋大門遊覧船 ＆ 龍貓森林", address: "〒819-1335 福岡県糸島市志摩芥屋674-12", lat: 33.6062, lng: 130.1141, note: "開車約 50 分鐘。芥屋漁港旁設有大型免費公共停車場。停好車後步行進入「龍貓森林」（10:47）。遊覽船若受風浪影響可能停開，出發前請在官網確認。", link: "https://www.google.com/maps/search/?api=1&query=33.6062,130.1141", type: "spot" },
+                    { time: "11:52", name: "牡蠣小屋 白浜家", address: "〒819-1335 福岡県糸島市志摩芥屋677-2", lat: 33.6051, lng: 130.1147, note: "開車約 3 分鐘。店前附設免費專用停車場。大快朵頤現烤扇貝、海螺、牡蠣等新鮮海產，週三正常營業。", link: "https://www.google.com/maps/search/?api=1&query=33.6051,130.1147", type: "food" },
+                    { time: "13:06", name: "またいちの塩 製塩所 とったん", address: "〒819-1335 福岡県糸島市志摩芥屋3757", lat: 33.6198, lng: 130.1018, note: "開車約 20 分鐘。半島端點路極窄，遊客車輛禁止駛入，須停在外圍專用付費停車場，再步行約 10 分鐘方可抵達。必買排隊花鹽布丁。", link: "https://www.google.com/maps/search/?api=1&query=33.6198,130.1018", type: "spot" },
+                    { time: "14:37", name: "ヤシの木ブランコ (椰子樹鞦韆)", address: "〒819-0203 福岡県福岡市西区小田79-6", lat: 33.6409, lng: 130.2291, note: "開車約 30 分鐘。停在「活魚茶屋 ざうお本店」付費停車場（於店內用餐消費可抵車資）。爆紅的網美海景鞦韆聖地。", link: "https://www.google.com/maps/search/?api=1&query=33.6409,130.2291", type: "spot" },
+                    { time: "15:50", name: "桜井二見ヶ浦 鳥居・夫婦岩", address: "〒819-1304 福岡県糸島市志摩桜井", lat: 33.6444, lng: 130.1989, note: "開車約 8 分鐘。馬路對面設有大型付費公共停車場（前 1 小時免費）。極具代表性的純白海中鳥居與夫婦岩。", link: "https://www.google.com/maps/search/?api=1&query=33.6444,130.1989", type: "spot" },
+                    { time: "17:22", name: "箱島神社", address: "〒819-1601 福岡県糸島市二丈浜窪86", lat: 33.5383, lng: 130.1264, note: "開車約 20 分鐘。國道旁設有少量免費「箱島神社專用停車格」（約 3-4 格）。為海中突出的小孤島，主祀愛之神。", link: "https://www.google.com/maps/search/?api=1&query=33.5383,130.1264", type: "spot" },
+                    { time: "19:01", name: "博多華味鳥 博多駅前店", address: "〒812-0011 福岡県福岡市博多区博多駅前3丁目23-17", lat: 33.5891, lng: 130.4158, note: "開車約 45 分鐘返回。無專屬車位，停博多站周邊投幣停車場。博多必吃極品水炊雞肉鍋（週三有營業）。務必提早線上預約！", link: "https://www.google.com/maps/search/?api=1&query=33.5891,130.4158", type: "food" },
+                    { time: "20:06", name: "返回 ９HOTEL HAKATA", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "回到溫馨的九號飯店，度過愜意海景自駕的充實一晚。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "hotel" }
+                ]
+            },
+            {
+                day: 7,
+                date: "2026/07/23 (四)",
+                title: "太宰府天滿宮歷史漫遊 ➔ 天神商圈首波大採購",
+                mileage: "45.5 km",
+                duration: "1 小時 20 分鐘",
+                warning: "🚨 自駕購物優勢！NOAH 的大空間從今天起發揮作用。下午採購的戰利品直接丟上車，免提重物擠電車，保留腿力。",
+                sketch: "太宰府天滿宮 ⛩️ ➔ 參道美食 ➔ 竈門神社 🌸 ➔ 天神 Mina 大血拼 🏢",
+                stops: [
+                    { time: "08:00", name: "福岡 ９HOTEL 出發", address: "〒812-0022 福岡県福岡市博多区", lat: 33.5997, lng: 130.4045, note: "經都市高速往南，朝代表性學問與現代美學交會之太宰府前進。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "car" },
+                    { time: "09:26", name: "太宰府天満宮", address: "〒818-0117 福岡県太宰府市宰府4-7-1", lat: 33.5215, lng: 130.5348, note: "開車約 30 分鐘。停在「太宰府駐車センター」（單次 500 日圓）。漫步觀賞藤本壯介設計的森林臨時殿。步行橫掃參道經典美食（10:27 梅枝餅、10:44 天山草莓大福、11:45 隈研吾星巴克）。", link: "https://www.google.com/maps/search/?api=1&query=33.5215,130.5348", type: "spot" },
+                    { time: "14:06", name: "宝満宮竈門神社", address: "〒818-0115 福岡県太宰府市内山883", lat: 33.5385, lng: 130.5612, note: "開車約 10 分鐘山路。神社附設付費停車場（單次 400 日圓）。為動漫鬼滅之刃聖地，內有由現代著名設計師打造的極簡御守販賣所。", link: "https://www.google.com/maps/search/?api=1&query=33.5385,130.5612", type: "spot" },
+                    { time: "15:36", name: "ミーナ天神 (Mina 天神)", address: "〒810-0001 福岡県福岡市中央区天神4-3-8", lat: 33.5936, lng: 130.3999, note: "開車約 40 分鐘。停在合作的大型特約立體停車場（商場消費達門檻可折抵）。全九州最大 UNIQLO/LOFT 聯合大本營。", link: "https://www.google.com/maps/search/?api=1&query=33.5936,130.3999", type: "spot" },
+                    { time: "17:32", name: "返回 ９HOTEL HAKATA", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "開車約 8 分鐘。回飯店大廳卸下沈甸甸的第一批戰利品，輕鬆悠閒享受福岡之夜。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "hotel" }
+                ]
+            },
+            {
+                day: 8,
+                date: "2026/07/24 (五)",
+                title: "天神/博多終極大血拼 ➔ 20:00 最終還車防線",
+                mileage: "18.5 km",
+                duration: "1 小時",
+                warning: "🚨 還車死線最關鍵！週五傍晚市區通往機場的道路與高速必陷極驚人大塞車！17:00 務必開回飯店卸載所有戰利品，預留至少 1 小時作為嚴重塞車防線。",
+                sketch: "大名潮流 ➔ 六本松明太子麵包 🥖 ➔ 兼虎沾麵 🌶️ ➔ 運河城 Alpen 🛍️ ➔ 飯店卸貨 ➔ 滿油還車",
+                stops: [
+                    { time: "08:55", name: "退房並將行李全部搬上車", address: "９HOTEL HAKATA 大門", lat: 33.5997, lng: 130.4045, note: "今日利用 NOAH 的驚人後備箱，攜帶全數行囊跑行程，免去中途折返。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "car" },
+                    { time: "10:05", name: "HUMAN MADE 福岡", address: "〒810-0041 福岡県福岡市中央区大名2-1-13", lat: 33.5878, lng: 130.3956, note: "開車約 12 分鐘。停靠大名地區民間投幣式停車場。店家於 11:00 營業，熱門潮牌，建議提早排隊等候。", link: "https://www.google.com/maps/search/?api=1&query=33.5878,130.3956", type: "spot" },
+                    { time: "11:13", name: "アマムダコタン 福岡本店", address: "〒810-0044 福岡県福岡市中央区六本松3-7-6", lat: 33.5756, lng: 130.3789, note: "開車約 12 分鐘。停在周邊投幣停車場。宛如復古藝術品的明太子精品麵包。現場排隊人潮極多（約 30-60 分鐘）。", link: "https://www.google.com/maps/search/?api=1&query=33.5756,130.3789", type: "food" },
+                    { time: "12:21", name: "麺や兼虎 天神本店", address: "〒810-0004 福岡県中央区渡辺通4-9-25", lat: 33.5871, lng: 130.4021, note: "開車約 10 分鐘。停天神大立體停車場。品嚐超濃厚極致排隊沾麵（辛辣程度可自選，極受歡迎）。", link: "https://www.google.com/maps/search/?api=1&query=33.5871,130.4021", type: "food" },
+                    { time: "14:41", name: "Alpen FUKUOKA ＆ 博多運河城", address: "〒812-0018 福岡県福岡市博多区住吉1-2-74", lat: 33.5888, lng: 130.4116, note: "開車約 10 分鐘。停博多運河城地下停車場。南棟 1F-3F 為西日本最大戶外露營登山與運動用品專賣店，熱愛露營必訪。", link: "https://www.google.com/maps/search/?api=1&query=33.5888,130.4116", type: "spot" },
+                    { time: "17:00", name: "九號飯店 戰術卸貨點", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "關鍵手續！先回飯店將 9 天來的所有重物戰利品與沈重行李完全卸在飯店大廳寄放，維持空車狀態前去輕鬆還車。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "service" },
+                    { time: "18:30", name: "加油並前往機場還車店", address: "〒812-0892 福岡県福岡市博多区東那珂2-22-3", lat: 33.5786, lng: 130.4429, note: "重要防塞線！還車前務必於臨近加油站將油箱加滿「Regular」無鉛汽油，並保留好加油收據。20:00 前辦妥 ETC 與還車手續。", link: "https://www.google.com/maps/search/?api=1&query=33.5786,130.4429", type: "car" }
+                ]
+            },
+            {
+                day: 9,
+                date: "2026/07/25 (六)",
+                title: "滿載而歸！福岡 ➔ 桃園國際機場",
+                mileage: "0 km (非自駕)",
+                duration: "無",
+                warning: "🚨 暑期週末福岡機場出境安檢排隊人數極多！務必提早 3 小時抵達。免稅店排隊結帳時間亦需預留。",
+                sketch: "退房 ➔ 呼叫大規格計程車直達機場 🚖 ➔ 桃園機場",
+                stops: [
+                    { time: "07:41", name: "九號飯店 退房", address: "〒812-0022 福岡県福岡市博多区神屋町6-18", lat: 33.5997, lng: 130.4045, note: "行李與採購品達極限狀態。強烈請飯店櫃檯呼叫大型計程車（如 Alphard 或是休旅車）直達機場國際線（約 2000~2500 日圓），免去拖重物狼狽擠地鐵痛苦。", link: "https://www.google.com/maps/search/?api=1&query=33.5997,130.4045", type: "service" },
+                    { time: "08:55", name: "福岡空港 国際線航廈", address: "〒812-0851 福岡県福岡市博多区大字青木739", lat: 33.5852, lng: 130.4507, note: "提早 3 小時報到。免稅店最後補貨（明太子、一蘭拉麵等伴手禮）。", link: "https://www.google.com/maps/search/?api=1&query=33.5852,130.4507", type: "transport" },
+                    { time: "12:25", name: "抵達臺灣桃園國際機場", address: "臺灣桃園國際機場第一/二航廈", lat: 25.0797, lng: 121.2342, note: "平安抵達國門，結束這趟精彩絕倫、無比順暢的 2026 九州全期自駕深度之旅！", link: "https://www.google.com/maps/search/?api=1&query=25.0797,121.2342", type: "transport" }
+                ]
+            }
+        ];
+
+        // --- PREPARATION CHECKLIST ITEMS ---
+        const defaultChecklist = [
+            { id: "lic-jp", text: "日文譯本 + 台灣駕照正本 (缺一不可)", checked: true },
+            { id: "passport", text: "護照正本 + 護照影本備份", checked: true },
+            { id: "cc-card", text: "高額度海外回饋信用卡 + 充足日圓現金", checked: false },
+            { id: "vjw", text: "Visit Japan Web 填寫完成與二維碼擷取", checked: false },
+            { id: "kep-confirm", text: "Toyota租車合約確認：開通 KEP 8日 + 租用 ETC卡", checked: false },
+            { id: "safari-bus", text: "Day 3 九州自然動物園叢林巴士票券網上預約", checked: false },
+            { id: "ume-cash", text: "Day 1 奧日田溫泉現場付款現金/卡片準備", checked: false },
+            { id: "google-offline", text: "Google Maps 九州線下地圖下載完成", checked: false }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentActiveDay = 1;
+        let map;
+        let markerLayerGroup;
+        let routePolyline;
+        let checklistData = JSON.parse(localStorage.getItem('kyushu_checklist_v1')) || defaultChecklist;
+
+        // --- MAP INITIALIZATION ---
+        function initMap() {
+            // Default center around Oita/Fukuoka area
+            map = L.map('map-container').setView([33.5852, 130.4507], 9);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            markerLayerGroup = L.layerGroup().addTo(map);
+            routePolyline = L.polyline([], {color: '#4f46e5', weight: 4, opacity: 0.85}).addTo(map);
+        }
+
+        // --- DYNAMICALLY DRAW MAP MARKERS AND ROUTES ---
+        function updateMapForDay(dayId) {
+            if (!map) return;
+            
+            // Clear existing markers
+            markerLayerGroup.clearLayers();
+            
+            const dayData = itinerary.find(d => d.day === dayId);
+            if (!dayData || dayData.stops.length === 0) return;
+
+            const latlngs = [];
+            
+            dayData.stops.forEach((stop, index) => {
+                latlngs.push([stop.lat, stop.lng]);
+                
+                // Color code markers based on type
+                let markerColor = "#4f46e5"; // default Indigo
+                if (stop.type === "food") markerColor = "#f59e0b"; // Amber
+                if (stop.type === "hotel" || stop.type === "transport") markerColor = "#f43f5e"; // Rose / Accent
+                
+                const customIconHtml = `
+                    <div class="flex items-center justify-center rounded-full border-2 border-white shadow-md text-white text-xs font-bold" 
+                         style="background-color: ${markerColor}; width: 26px; height: 26px;">
+                        ${index + 1}
+                    </div>
+                `;
+
+                const customMarkerIcon = L.divIcon({
+                    html: customIconHtml,
+                    className: 'custom-div-icon',
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+
+                const marker = L.marker([stop.lat, stop.lng], { icon: customMarkerIcon });
+                
+                // Dynamic Popup contents with high precision Google Maps Link
+                const popupContent = `
+                    <div class="p-1 space-y-1 font-sans">
+                        <strong class="text-indigo-900 block text-sm">${stop.time} - ${stop.name}</strong>
+                        <span class="text-slate-500 text-[10px] block">${stop.address}</span>
+                        <p class="text-xs text-slate-700 leading-tight">${stop.note}</p>
+                        <a href="${stop.link}" target="_blank" class="inline-block mt-1 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded hover:bg-indigo-700 transition-colors">
+                            <i class="fa-solid fa-diamond-turn-right mr-1"></i> 開啟 Google Maps 導航
+                        </a>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                markerLayerGroup.addLayer(marker);
+            });
+
+            // Update route polyline path
+            routePolyline.setLatLngs(latlngs);
+            
+            // Adjust map viewport boundary smoothly to wrap all stops
+            if (latlngs.length > 0) {
+                const bounds = L.latLngBounds(latlngs);
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+            }
+        }
+
+        // --- INTERACTIVE SELECT DAY ---
+        function selectDay(dayNum) {
+            currentActiveDay = dayNum;
+            
+            // Update day selector buttons active state
+            const buttons = document.querySelectorAll('.day-tab-btn');
+            buttons.forEach(btn => {
+                const btnDay = parseInt(btn.getAttribute('data-day'));
+                if (btnDay === dayNum) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                    btn.classList.remove('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                    btn.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+                }
+            });
+
+            // Load and build Timeline / Details
+            const dayData = itinerary.find(d => d.day === dayNum);
+            if (!dayData) return;
+
+            // Header Banner updates
+            document.getElementById('day-badge').innerText = `DAY ${dayData.day}`;
+            document.getElementById('day-date').innerText = dayData.date;
+            document.getElementById('day-title').innerText = dayData.title;
+            document.getElementById('day-sketch-route').innerText = dayData.sketch;
+            document.getElementById('current-sketch').innerText = dayData.sketch;
+            document.getElementById('dynamic-warning').innerHTML = dayData.warning;
+
+            // Updates quick dashboard stats
+            document.getElementById('stat-mileage').innerText = dayData.mileage;
+            document.getElementById('stat-time').innerText = dayData.duration;
+
+            // Populate timeline items
+            const timelineContainer = document.getElementById('timeline-list');
+            timelineContainer.innerHTML = '';
+
+            dayData.stops.forEach((stop, idx) => {
+                const stopId = `day-${dayNum}-stop-${idx}`;
+                // Check localstorage if stop is completed
+                const isChecked = localStorage.getItem(stopId) === 'true';
+                
+                let iconClass = "fa-solid fa-map-pin text-indigo-500";
+                if (stop.type === "food") iconClass = "fa-solid fa-utensils text-amber-500";
+                if (stop.type === "hotel") iconClass = "fa-solid fa-bed text-rose-500";
+                if (stop.type === "car") iconClass = "fa-solid fa-car text-sky-500";
+                if (stop.type === "transport") iconClass = "fa-solid fa-plane text-indigo-600";
+                if (stop.type === "service") iconClass = "fa-solid fa-bell-concierge text-emerald-600";
+
+                const timelineNode = document.createElement('div');
+                timelineNode.className = `relative pl-8 pb-6 group transition-all duration-300 ${isChecked ? 'opacity-60' : ''}`;
+                timelineNode.id = `node-${stopId}`;
+                
+                timelineNode.innerHTML = `
+                    <!-- Bullet icon -->
+                    <div class="absolute left-0 top-1.5 w-8 h-8 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm z-20 group-hover:border-indigo-500 transition-all duration-300">
+                        <i class="${iconClass} text-xs"></i>
+                    </div>
+                    
+                    <!-- Content Card -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer" onclick="focusOnStop(${stop.lat}, ${stop.lng}, '${stop.name.replace(/'/g, "\\'")}')">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded text-[10px] font-bold">
+                                    ${stop.time}
+                                </span>
+                                <h4 class="font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors text-sm sm:text-base">
+                                    ${stop.name}
+                                </h4>
+                            </div>
+                            <div class="flex items-center gap-2 no-print" onclick="event.stopPropagation()">
+                                <label class="flex items-center gap-1 cursor-pointer">
+                                    <input type="checkbox" onchange="toggleStopDone('${stopId}')" ${isChecked ? 'checked' : ''} class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
+                                    <span class="text-[10px] text-slate-400 select-none">已抵達</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-slate-500 flex items-start gap-1 mb-2">
+                            <i class="fa-solid fa-location-dot text-slate-400 mt-0.5"></i>
+                            <span>${stop.address}</span>
+                        </p>
+                        
+                        <p class="text-xs text-slate-700 bg-white p-2.5 rounded-lg border border-slate-100 leading-relaxed mb-3">
+                            ${stop.note}
+                        </p>
+                        
+                        <div class="flex justify-between items-center" onclick="event.stopPropagation()">
+                            <span class="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">
+                                點擊此卡片可於右圖定位
+                            </span>
+                            <a href="${stop.link}" target="_blank" class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 font-extrabold text-xs px-3 py-1.5 rounded-lg transition-all border border-indigo-100 shadow-sm">
+                                <i class="fa-solid fa-route"></i>
+                                <span>點我導航</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                timelineContainer.appendChild(timelineNode);
+            });
+
+            // Leaflet Map updates dynamically
+            updateMapForDay(dayNum);
+        }
+
+        // --- TIMELINE STOP COMPLETED LOGIC (LocalStorage persistent) ---
+        function toggleStopDone(stopId) {
+            const isChecked = localStorage.getItem(stopId) === 'true';
+            localStorage.setItem(stopId, (!isChecked).toString());
+            
+            // Dynamic UI styling feedback
+            const node = document.getElementById(`node-${stopId}`);
+            if (node) {
+                if (!isChecked) {
+                    node.classList.add('opacity-60');
+                } else {
+                    node.classList.remove('opacity-60');
+                }
+            }
+        }
+
+        // Focus map to specific stop coordinate when clicking cards
+        function focusOnStop(lat, lng, stopName) {
+            if (!map) return;
+            map.setView([lat, lng], 15, { animate: true, duration: 1 });
+            
+            // Scan through all markers to find and open popup
+            markerLayerGroup.eachLayer((marker) => {
+                if (marker.getLatLng().lat === lat && marker.getLatLng().lng === lng) {
+                    marker.openPopup();
+                }
+            });
+        }
+
+        // --- PREPARE SIDEBAR BUTTONS ---
+        function buildDaySelectors() {
+            const container = document.getElementById('day-selector');
+            container.innerHTML = '';
+
+            itinerary.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = `day-tab-btn flex-shrink-0 xl:w-full text-left px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex xl:items-center justify-between transition-all duration-300 border border-slate-100 gap-4 `;
+                btn.setAttribute('data-day', d.day);
+                btn.onclick = () => selectDay(d.day);
+                
+                btn.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-950 font-black text-[10px] flex items-center justify-center shadow-inner shrink-0">
+                            D${d.day}
+                        </span>
+                        <div>
+                            <p class="font-extrabold text-slate-900">${d.date.split(" ")[0]}</p>
+                            <p class="text-[10px] text-slate-400 font-semibold truncate xl:max-w-[130px]">${d.title.split("➔")[0]}</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-300 hidden xl:block"></i>
+                `;
+                
+                container.appendChild(btn);
+            });
+        }
+
+        // --- PREPARATION CHECKLIST (LocalStorage persistent) ---
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+
+            checklistData.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-2 p-1.5 hover:bg-slate-50 rounded-lg transition-colors";
+                li.innerHTML = `
+                    <input type="checkbox" id="${item.id}" ${item.checked ? 'checked' : ''} onchange="toggleChecklist('${item.id}')" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 mt-0.5 cursor-pointer">
+                    <label for="${item.id}" class="cursor-pointer select-none leading-relaxed ${item.checked ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}">
+                        ${item.text}
+                    </label>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        function toggleChecklist(itemId) {
+            const item = checklistData.find(i => i.id === itemId);
+            if (item) {
+                item.checked = !item.checked;
+                localStorage.setItem('kyushu_checklist_v1', JSON.stringify(checklistData));
+                renderChecklist();
+            }
+        }
+
+        function resetChecklist() {
+            checklistData = defaultChecklist.map(i => ({ ...i, checked: false }));
+            localStorage.setItem('kyushu_checklist_v1', JSON.stringify(checklistData));
+            renderChecklist();
+        }
+
+        // --- GLOBAL SEARCH BAR INTEGRATION ---
+        function searchItinerary() {
+            const query = document.getElementById('global-search').value.trim().toLowerCase();
+            const resultsBox = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsBox.classList.add('hidden');
+                resultsBox.innerHTML = '';
+                return;
+            }
+
+            const matchedStops = [];
+            itinerary.forEach(day => {
+                day.stops.forEach((stop, stopIdx) => {
+                    if (stop.name.toLowerCase().includes(query) || stop.address.toLowerCase().includes(query) || stop.note.toLowerCase().includes(query)) {
+                        matchedStops.push({
+                            dayNum: day.day,
+                            dateStr: day.date,
+                            stopName: stop.name,
+                            stopTime: stop.time,
+                            lat: stop.lat,
+                            lng: stop.lng
+                        });
+                    }
+                });
+            });
+
+            if (matchedStops.length === 0) {
+                resultsBox.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">找不到相符的行程景點、美食</div>`;
+                resultsBox.classList.remove('hidden');
+                return;
+            }
+
+            resultsBox.innerHTML = '';
+            matchedStops.forEach(match => {
+                const div = document.createElement('div');
+                div.className = "p-3 hover:bg-indigo-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition-colors";
+                div.onclick = () => {
+                    resultsBox.classList.add('hidden');
+                    document.getElementById('global-search').value = '';
+                    
+                    // Switch Day
+                    selectDay(match.dayNum);
+                    
+                    // Highlight timeline stop card smooth scroll
+                    setTimeout(() => {
+                        focusOnStop(match.lat, match.lng, match.stopName);
+                        const stopId = `day-${match.dayNum}-stop-${itinerary.find(d => d.day === match.dayNum).stops.findIndex(s => s.name === match.stopName)}`;
+                        const element = document.getElementById(`node-${stopId}`);
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 150);
+                };
+                
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-0.5">
+                        <span class="text-xs font-bold text-indigo-600">D${match.dayNum} (${match.dateStr.split(" ")[0]})</span>
+                        <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">${match.stopTime}</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-800">${match.stopName}</p>
+                `;
+                resultsBox.appendChild(div);
+            });
+            resultsBox.classList.remove('hidden');
+        }
+
+        // --- ASSISTANT TOOLS logic ---
+        function switchWidgetTab(tabName) {
+            const btnClearance = document.getElementById('btn-clearance');
+            const btnRate = document.getElementById('btn-rate');
+            const tabClearance = document.getElementById('widget-clearance');
+            const tabRate = document.getElementById('widget-rate');
+
+            if (tabName === 'clearance') {
+                btnClearance.className = "flex-1 py-1 text-center font-semibold rounded bg-indigo-600 text-white transition-all";
+                btnRate.className = "flex-1 py-1 text-center font-semibold rounded text-indigo-300 hover:text-white transition-all";
+                tabClearance.classList.remove('hidden');
+                tabRate.classList.add('hidden');
+            } else {
+                btnRate.className = "flex-1 py-1 text-center font-semibold rounded bg-indigo-600 text-white transition-all";
+                btnClearance.className = "flex-1 py-1 text-center font-semibold rounded text-indigo-300 hover:text-white transition-all";
+                tabRate.classList.remove('hidden');
+                tabClearance.classList.add('hidden');
+            }
+        }
+
+        // Car Height Check Logic
+        function checkCarClearance() {
+            const inputVal = parseFloat(document.getElementById('parking-height').value);
+            const resultBox = document.getElementById('clearance-result');
+            const noahHeight = 1.895; // W2 Toyota Noah Height limit
+
+            if (isNaN(inputVal) || inputVal <= 0) {
+                resultBox.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i>請輸入有效限高數值</span>`;
+                return;
+            }
+
+            if (inputVal < noahHeight) {
+                resultBox.innerHTML = `<span class="text-rose-400 font-extrabold"><i class="fa-solid fa-circle-xmark mr-1"></i>極度危險！NOAH無法進入 (${inputVal}m < ${noahHeight}m)</span>`;
+            } else if (inputVal >= noahHeight && inputVal < 2.0) {
+                resultBox.innerHTML = `<span class="text-amber-300 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>邊界限制！若天線直立需小心擦碰！</span>`;
+            } else {
+                resultBox.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>安全可停！Noah安全通行無阻。</span>`;
+            }
+        }
+
+        // Currency Convert Logic
+        function convertCurrency() {
+            const jpyVal = parseFloat(document.getElementById('jpy-input').value);
+            const multiplier = parseFloat(document.getElementById('rate-multiplier').value);
+            const resultBox = document.getElementById('twd-result');
+
+            if (isNaN(jpyVal) || jpyVal < 0 || isNaN(multiplier) || multiplier <= 0) {
+                resultBox.innerText = `轉換失敗`;
+                return;
+            }
+
+            const converted = Math.round(jpyVal * multiplier);
+            resultBox.innerText = `約 NT$ ${converted.toLocaleString()} 元`;
+        }
+
+        // Close search list if clicked outside
+        document.addEventListener('click', function(e) {
+            const searchBox = document.getElementById('global-search');
+            const resultsBox = document.getElementById('search-results');
+            if (e.target !== searchBox && e.target !== resultsBox) {
+                resultsBox.classList.add('hidden');
+            }
+        });
+
+        // --- WINDOW LOAD INITIALIZATION ---
+        window.onload = function () {
+            // Render basic lists first
+            buildDaySelectors();
+            renderChecklist();
+            
+            // Instantiate Map
+            initMap();
+            
+            // Select default Day 1
+            selectDay(1);
+        }
+    </script>
+</body>
+</html>
