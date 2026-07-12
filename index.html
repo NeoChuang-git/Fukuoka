@@ -60,13 +60,7 @@
 <body class="bg-slate-50 text-slate-800 selection:bg-indigo-500 selection:text-white">
 <script>
   (function() {
-    const correctHash = "f7850a552bf318eb4dfcf05fdfa5611f7c00ab2f8084a44f1c9bb7eb30f55cf5";
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+    const correctBase64 = "ZnVrdW9rYTIwMjY=";
     const style = document.createElement('style');
     style.innerHTML = `
       #auth-overlay {
@@ -93,6 +87,7 @@
       .error-msg { color: #f38ba8; margin-top: 0.5rem; font-size: 0.9rem; display: none; }
     `;
     document.head.appendChild(style);
+    
     const overlay = document.createElement('div');
     overlay.id = "auth-overlay";
     overlay.innerHTML = `
@@ -104,31 +99,41 @@
         <div id="auth-error" class="error-msg">密碼錯誤，請重新輸入！</div>
       </div>
     `;
+    
     document.addEventListener("DOMContentLoaded", function() {
       document.body.appendChild(overlay);
       const input = document.getElementById("auth-pwd");
       const button = document.getElementById("auth-btn");
       const errorDiv = document.getElementById("auth-error");
+      
       const isAuthed = localStorage.getItem("fukuoka_auth_passed");
       if (isAuthed === "true") {
         overlay.remove();
         return;
       }
-      async function handleAuth() {
+      
+      function handleAuth() {
         const pwd = input.value.trim();
         if (!pwd) return;
-        const hash = await sha256(pwd);
-        if (hash === correctHash) {
-          localStorage.setItem("fukuoka_auth_passed", "true");
-          overlay.style.transition = "opacity 0.5s ease";
-          overlay.style.opacity = 0;
-          setTimeout(() => overlay.remove(), 500);
-        } else {
+        try {
+          const encoded = window.btoa(pwd);
+          if (encoded === correctBase64) {
+            localStorage.setItem("fukuoka_auth_passed", "true");
+            overlay.style.transition = "opacity 0.5s ease";
+            overlay.style.opacity = 0;
+            setTimeout(() => overlay.remove(), 500);
+          } else {
+            errorDiv.style.display = "block";
+            input.value = "";
+            input.focus();
+          }
+        } catch (e) {
           errorDiv.style.display = "block";
           input.value = "";
           input.focus();
         }
       }
+      
       button.onclick = handleAuth;
       input.onkeydown = function(e) {
         if (e.key === "Enter") handleAuth();
